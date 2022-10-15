@@ -4,9 +4,11 @@
 
 /**
  * _printf - function my printf
- * @format: string whit format to print
+ * @format: string formatted to be printed
  *
  * Return: number of chars that print
+ * Auth: 	Harley Otomofa
+ *			Samuel Chibwe
  */
 int _printf(const char *format, ...)
 {
