@@ -8,14 +8,18 @@
  *
  * Return: number of chars that print
  * Auth: 	Harley Otomofa
- *			Samuel Chibwe
+ *		Samuel Chibwe
  */
 int _printf(const char *format, ...)
 {
+	buffer_t *output;
 	va_list args;
-	int length = 0;
+	int length;
 
 	if (format == NULL)
+		return (-1);
+	output = init_buffer();
+	if (output == NULL)
 		return (-1);
 
 	va_start(args, format);
