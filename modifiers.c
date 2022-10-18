@@ -1,195 +1,84 @@
 #include "main.h"
 
-unsigned char handle_flags(const char *flag, char *index);
-unsigned char handle_length(const char *modifier, char *index);
-int handle_width(va_list args, const char *modifier, char *index);
-int handle_precision(va_list args, const char *modifier, char *index);
-unsigned int (*handle_specifiers(const char *specifier))(va_list, buffer_t *,
-		unsigned char, int, int, unsigned char);
+unsigned int print_width(buffer_t *output, unsigned int printed,
+		unsigned char flags, int wid);
+unsigned int print_string_width(buffer_t *output,
+		unsigned char flags, int wid, int prec, int size);
+unsigned int print_neg_width(buffer_t *output, unsigned int printed,
+		unsigned char flags, int wid);
 
 /**
- * handle_flags - Function that matches flags with corresponding values.
- * @flag: A pointer to string of flags.
- * @index: index counter.
+ * print_width - Stores leading spaces to a buffer for a width modifier.
+ * @output: A buffer_t struct containing a character array.
+ * @printed: The current number of characters already printed to output
+ *           for a given number specifier.
+ * @flags: Flag modifiers.
+ * @wid: A width modifier.
  *
- * Return: A corresponding value or 0 if none is found.
- * Auth: Harley Otomofa
- *		Samuel Chibwe
+ * Return: The number of bytes stored to the buffer.
  */
-unsigned char handle_flags(const char *flag, char *index)
+unsigned int print_width(buffer_t *output, unsigned int printed,
+		unsigned char flags, int wid)
 {
-	int i, j;
-	unsigned char length = 0;
-	flag_t flags[] = {
-		{'+', PLUS},
-		{' ', SPACE},
-		{'#', HASH},
-		{'0', ZERO},
-		{'-', NEG},
-		{0, 0}
-	};
+	unsigned int ret = 0;
+	char width = ' ';
 
-	for (i = 0; flag[i]; i++)
+	if (NEG_FLAG == 0)
 	{
-		for (j = 0; flags[j].flag != 0; j++)
-		{
-			if (flag[i] == flags[j].flag)
-			{
-				(*index)++;
-				if (length == 0)
-					length = flags[j].value;
-				else
-					length |= flags[j].value;
-				break;
-			}
-		}
-		if (flags[j].value == 0)
-			break;
+		for (wid -= printed; wid > 0;)
+			ret += _memcpy(output, &width, 1);
 	}
 
-	return (length);
+	return (ret);
 }
 
 /**
- * handle_length - Matches length modifiers with corresponding values.
- * @modifier: Pointer to modifier.
- * @index: Index counter for all strings.
+ * print_string_width - Stores leading spaces to a buffer for a width modifier.
+ * @output: A buffer_t struct containing a character array.
+ * @flags: Flag modifiers.
+ * @wid: A width modifier.
+ * @prec: A precision modifier.
+ * @size: The size of the string.
  *
- * Return: Corresponding value or 0 if none is found.
+ * Return: The number of bytes stored to the buffer.
  */
-unsigned char handle_length(const char *modifier, char *index)
+unsigned int print_string_width(buffer_t *output,
+		unsigned char flags, int wid, int prec, int size)
 {
-	if (*modifier == 'h')
+	unsigned int ret = 0;
+	char width = ' ';
+
+	if (NEG_FLAG == 0)
 	{
-		(*index)++;
-		return (SHORT);
+		wid -= (prec == -1) ? size : prec;
+		for (; wid > 0; wid--)
+			ret += _memcpy(output, &width, 1);
 	}
 
-	else if (*modifier == 'l')
-	{
-		(*index)++;
-		return (LONG);
-	}
-
-	return (0);
+	return (ret);
 }
 
 /**
- * handle_width - Matches a width modifier with its corresponding value.
- * @args: A va_list of arguments.
- * @modifier: A pointer to a potential width modifier.
- * @index: An index counter for the original format string.
+ * print_neg_width - Stores trailing spaces to a buffer for a '-' flag.
+ * @output: A buffer_t struct containing a character array.
+ * @printed: The current number of bytes already stored to output
+ *           for a given specifier.
+ * @flags: Flag modifiers.
+ * @wid: A width modifier.
  *
- * Return: If a width modifier is matched - its value.
- *         Otherwise - 0.
+ * Return: The number of bytes stored to the buffer.
  */
-int handle_width(va_list args, const char *modifier, char *index)
+unsigned int print_neg_width(buffer_t *output, unsigned int printed,
+		unsigned char flags, int wid)
 {
-	int value = 0;
+	unsigned int ret = 0;
+	char width = ' ';
 
-	while ((*modifier >= '0' && *modifier <= '9') || (*modifier == '*'))
+	if (NEG_FLAG == 1)
 	{
-		(*index)++;
-
-		if (*modifier == '*')
-		{
-			value = va_arg(args, int);
-			if (value <= 0)
-				return (0);
-			return (value);
-		}
-
-		value *= 10;
-		value += (*modifier - '0');
-		modifier++;
+		for (wid -= printed; wid > 0; wid--)
+			ret += _memcpy(output, &width, 1);
 	}
 
-	return (value);
-}
-
-/**
- * handle_precision - Matches a precision modifier with
- *                    its corresponding value.
- * @args: A va_list of arguments.
- * @modifier: A pointer to a potential precision modifier.
- * @index: An index counter for the original format string.
- *
- * Return: If a precision modifier is matched - its value.
- *         If the precision modifier is empty, zero, or negative - 0.
- *         Otherwise - -1.
- */
-int handle_precision(va_list args, const char *modifier, char *index)
-{
-	int value = 0;
-
-	if (*modifier != '.')
-		return (-1);
-
-	modifier++;
-	(*index)++;
-
-	if ((*modifier <= '0' || *modifier > '9') &&
-	     *modifier != '*')
-	{
-		if (*modifier == '0')
-			(*index)++;
-		return (0);
-	}
-
-	while ((*modifier >= '0' && *modifier <= '9') ||
-	       (*modifier == '*'))
-	{
-		(*index)++;
-
-		if (*modifier == '*')
-		{
-			value = va_arg(args, int);
-			if (value <= 0)
-				return (0);
-			return (value);
-		}
-
-		value *= 10;
-		value += (*modifier - '0');
-		modifier++;
-	}
-
-	return (value);
-}
-
-/**
- * handle_specifiers - Matches all conversion specifiers.
- * @specifier: Pointer to conversion specifier.
- *
- * Return: Pointer to the function or NULL if none is found.
- */
-unsigned int (*handle_specifiers(const char *specifier))(va_list, buffer_t *,
-		unsigned char, int, int, unsigned char)
-{
-	int i;
-	converter_t converters[] = {
-		{'c', convert_c},
-		{'s', convert_s},
-		{'d', convert_di},
-		{'i', convert_di},
-		{'%', convert_percent},
-		{'b', convert_b},
-		{'u', convert_u},
-		{'o', convert_o},
-		{'x', convert_x},
-		{'X', convert_X},
-		{'S', convert_S},
-		{'p', convert_p},
-		{'r', convert_r},
-		{'R', convert_R},
-		{0, NULL}
-	};
-
-	for (i = 0; converters[i].func; i++)
-	{
-		if (converters[i].specifier == *specifier)
-			return (converters[i].func);
-	}
-
-	return (NULL);
+	return (ret);
 }
