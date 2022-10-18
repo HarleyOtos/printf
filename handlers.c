@@ -20,7 +20,7 @@ unsigned int (*handle_specifiers(const char *specifier))(va_list, buffer_t *,
 unsigned char handle_flags(const char *flag, char *index)
 {
 	int i, j;
-	unsigned char length = 0;
+	unsigned char ret = 0;
 	flag_t flags[] = {
 		{'+', PLUS},
 		{' ', SPACE},
@@ -37,10 +37,10 @@ unsigned char handle_flags(const char *flag, char *index)
 			if (flag[i] == flags[j].flag)
 			{
 				(*index)++;
-				if (length == 0)
-					length = flags[j].value;
+				if (ret == 0)
+					ret = flags[j].value;
 				else
-					length |= flags[j].value;
+					ret |= flags[j].value;
 				break;
 			}
 		}
@@ -48,7 +48,7 @@ unsigned char handle_flags(const char *flag, char *index)
 			break;
 	}
 
-	return (length);
+	return (ret);
 }
 
 /**
@@ -160,12 +160,12 @@ int handle_precision(va_list args, const char *modifier, char *index)
 }
 
 /**
- * handle_specifiers - Match conversion specifiers with
- *                     corresponding conversion functions.
- * @specifier: A pointer to conversion specifier.
+ * handle_specifiers - Matches a conversion specifier with
+ *                     a corresponding conversion function.
+ * @specifier: A pointer to a potential conversion specifier.
  *
- * Return: Pointer to the function if matched.
- *         Otherwise returns NULL.
+ * Return: If a conversion function is matched - a pointer to the function.
+ *         Otherwise - NULL.
  */
 unsigned int (*handle_specifiers(const char *specifier))(va_list, buffer_t *,
 		unsigned char, int, int, unsigned char)

@@ -7,8 +7,8 @@ int run_printf(const char *format, va_list args, buffer_t *output);
 int _printf(const char *format, ...);
 
 /**
- * cleanup - function that cleans up operations for _printf
- * @args: List of arguments provided to _printf through va_list.
+ * cleanup - Peforms cleanup operations for _printf.
+ * @args: A va_list of arguments provided to _printf.
  * @output: A buffer_t struct.
  */
 void cleanup(va_list args, buffer_t *output)
@@ -28,7 +28,7 @@ void cleanup(va_list args, buffer_t *output)
  */
 int run_printf(const char *format, va_list args, buffer_t *output)
 {
-	int i, wid, prec, length = 0;
+	int i, wid, prec, ret = 0;
 	char tmp;
 	unsigned char flags, len;
 	unsigned int (*f)(va_list, buffer_t *,
@@ -50,12 +50,12 @@ int run_printf(const char *format, va_list args, buffer_t *output)
 			if (f != NULL)
 			{
 				i += tmp + 1;
-				length += f(args, output, flags, wid, prec, len);
+				ret += f(args, output, flags, wid, prec, len);
 				continue;
 			}
 			else if (*(format + i + tmp + 1) == '\0')
 			{
-				length = -1;
+				ret = -1;
 				break;
 			}
 		}
@@ -63,22 +63,20 @@ int run_printf(const char *format, va_list args, buffer_t *output)
 		i += (len != 0) ? 1 : 0;
 	}
 	cleanup(args, output);
-	return (length);
+	return (ret);
 }
 
 /**
- * _printf - function my printf
- * @format: string formatted to be printed
+ * _printf - Outputs a formatted string.
+ * @format: Character string to print - may contain directives.
  *
- * Return: number of chars that print
- * Auth: 	Harley Otomofa
- *		Samuel Chibwe
+ * Return: The number of characters printed.
  */
 int _printf(const char *format, ...)
 {
 	buffer_t *output;
 	va_list args;
-	int length;
+	int ret;
 
 	if (format == NULL)
 		return (-1);
@@ -88,7 +86,7 @@ int _printf(const char *format, ...)
 
 	va_start(args, format);
 
-	length = _print_format(format, args);
-	va_end(args);
-	return (length);
+	ret = run_printf(format, args, output);
+
+	return (ret);
 }
