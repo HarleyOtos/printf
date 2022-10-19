@@ -1,26 +1,3 @@
-main.h.txt
-Who has access
-A
-System properties
-Type
-Text
-Size
-654 bytes
-Storage used
-654 bytes
-Location
-print_f
-Owner
-Antony Bahati
-Modified
-Oct 17, 2022 by Antony Bahati
-Opened
-1:38 PM by me
-Created
-Oct 17, 2022
-No description
-Viewers can download
-
 #ifndef _MAIN_H_
 #define _MAIN_H_
 
